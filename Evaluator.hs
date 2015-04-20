@@ -15,21 +15,18 @@ eval(P.ExpSucc e) = P.ExpSucc (eval e)
 eval(P.ExpPred e) = exp_pred (eval e)
 	where exp_pred (P.ValNat P.NatZero) = P.ValNat P.NatZero
       	      exp_pred (P.ExpSucc val)      = val
-      	      exp_pred _                    = error $ "Invalid evaluation (Pred)"
 
 
 -- E-IsZero + E-IsZeroSucc + E-IsZeroZero
 eval(P.ExpIsZero e) = exp_iszero (eval e)
 	where exp_iszero (P.ValNat P.NatZero) = P.ValBool P.BoolTrue
       	      exp_iszero (P.ExpSucc _)        = P.ValBool P.BoolFalse
-      	      exp_iszero _                    = error $ "Invalid evaluation (IsZero)"   		
  
 
 -- E-If + E-IfTrue + E-IfFalse
 eval(P.ExpIf c f s) = exp_if (eval c)
 	where exp_if (P.ValBool P.BoolTrue)  = eval f
       	      exp_if (P.ValBool P.BoolFalse) = eval s
-              exp_if _ 	                     = error $ "Invalid evaluation (If)"
 
 -- Addition
 eval(P.ExpPlus frst (P.ValNat P.NatZero)) = eval frst

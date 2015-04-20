@@ -31,7 +31,7 @@ p_test9 = TestCase (assertEqual "Parse Min" (parse "min succ succ succ 0 succ su
 p_test10 = TestCase (assertEqual "Parse Mult" (parse "mult succ succ succ 0 succ succ 0") (ExpMult (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero)))) (ExpSucc (ExpSucc (ValNat NatZero)))))
 p_test11 = TestCase (assertEqual "Parse Div" (parse "div succ succ 0 0")  (ExpDiv (ExpSucc (ExpSucc (ValNat NatZero))) (ValNat NatZero)))
 
--- Test List
+-- List
 
 p_tests = TestList [TestLabel "Parse 1" p_test1,
 	            TestLabel "Parse 2" p_test2,
@@ -50,7 +50,7 @@ p_tests = TestList [TestLabel "Parse 1" p_test1,
 
 check text = checkType . parse $ text
 
--- Check Valid Typing
+-- Test Valid Typing
 
 c_test1 = TestCase (assertEqual "Tcheck 0" (check "0") (Nat))
 c_test2 = TestCase (assertEqual "Tcheck true" (check "true") (Bool))
@@ -66,14 +66,17 @@ c_test11 = TestCase (assertEqual "Tcheck Mult gen" (check "mult succ 0 0 ") (Nat
 c_test12 = TestCase (assertEqual "Tcheck Div zero" (check "div 0 succ 0") (Nat))
 c_test13 = TestCase (assertEqual "Tcheck Div gen" (check "div succ succ 0 succ 0") (Nat))
 
--- Check Invalid typing
+-- Test Invalid typing
 
 cf_test1 = assertError "IsZero Bool Fail" "Invalid type (iszero)" (check "iszero true")
 cf_test2 = assertError "If not the same type" "Invalid type (If)" (check "if true then true else 0")
 cf_test3 = assertError "If cond not Bool" "Invalid type (If)" (check "if 0 then true else false")
+cf_test4 = assertError "plus bool" "Invalid type (Plus)" (check "plus true 0")
+cf_test5 = assertError "min bool" "Invalid type (Min)" (check "min true 0")
+cf_test6 = assertError "mult bool" "Invalid type (Mult)" (check "mult true 0")
+cf_test7 = assertError "div bool" "Invalid type (Div)" (check "div 0 true")
 
-
--- Test Lists
+-- Lists
 
 c_tests = TestList [TestLabel "Tcheck 1" c_test1,
 		    TestLabel "Tcheck 2" c_test2,
@@ -91,52 +94,65 @@ c_tests = TestList [TestLabel "Tcheck 1" c_test1,
 
 cf_tests = TestList  [TestLabel "TFcheck1" cf_test1,
                       TestLabel "Tfcheck2" cf_test2,
-                      TestLabel "Tfcheck3" cf_test3]
+                      TestLabel "Tfcheck3" cf_test3,
+  		      TestLabel "Tfcheck4" cf_test4,
+                      TestLabel "Tfcheck5" cf_test5,
+                      TestLabel "Tfcheck6" cf_test6,
+                      TestLabel "Tfcheck7" cf_test7]
 
 
 ------ Eval tests
 
 ev text = eval . parse $ text
 
-e_test1 = TestCase (assertEqual "Echeck 0" (ev "0") (ValNat NatZero))
-e_test2 = TestCase (assertEqual "Echeck true" (ev "true") (ValBool BoolTrue))
-e_test3 = TestCase (assertEqual "Echeck iszero 0" (ev "iszero 0") (ValBool BoolTrue))
-e_test4 = TestCase (assertEqual "Echeck iszero succ 0" (ev "iszero succ 0") (ValBool BoolFalse))
-e_test5 = TestCase (assertEqual "Echeck iszero pred 0" (ev "iszero pred 0") (ValBool BoolTrue))
-e_test6 = TestCase (assertEqual "Echeck ifTrue" (ev "if iszero 0 then succ 0 else succ succ 0") (ExpSucc (ValNat NatZero)))
-e_test7 = TestCase (assertEqual "Echeck IfFalse" (ev "if iszero succ 0 then 0 else pred 0") (ValNat NatZero))
-e_test8 = TestCase (assertEqual "Echeck Plus Zero" (ev "plus 0 0") (ValNat NatZero))
-e_test9 = TestCase (assertEqual "Echeck Plus Succ" (ev "plus succ 0 0") (ExpSucc (ValNat NatZero)))
-e_test10 = TestCase (assertEqual "Echeck Plus Gen" (ev "plus succ 0 succ 0") (ExpSucc (ExpSucc (ValNat NatZero))))
-e_test11 = TestCase (assertEqual "Echeck Min Zero" (ev "min 0 0") (ValNat NatZero))
-e_test12 = TestCase (assertEqual "Echeck Min Succ" (ev "min succ 0 0") (ExpSucc (ValNat NatZero)))
-e_test13 = TestCase (assertEqual "Echeck Min Gen" (ev "min succ succ 0 succ 0") (ExpSucc (ValNat NatZero)))
-e_test14 = TestCase (assertEqual "Echeck Mult Zero" (ev "mult 0 0") (ValNat NatZero))
-e_test15 = TestCase (assertEqual "Echeck Mult Succ" (ev "mult succ 0 0") (ValNat NatZero))
-e_test16 = TestCase (assertEqual "Echeck Mult Gen" (ev "mult succ succ 0 succ succ 0") (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))
-e_test17 = TestCase (assertEqual "Echeck Div Zero" (ev "div 0 succ 0") (ValNat NatZero))
-e_test18 = TestCase (assertEqual "Echeck Div Succ" (ev "div succ 0 succ 0") (ExpSucc (ValNat NatZero)))
-e_test19 = TestCase (assertEqual "Echeck Div Gen" (ev "div succ succ succ succ 0 succ succ 0") (ExpSucc (ExpSucc (ValNat NatZero)))) 
+-- Test valid evaluations
 
-e_tests = TestList [TestLabel "Echeck 1" e_test1,
-		    TestLabel "Echeck 2" e_test2,
-		    TestLabel "Echeck 3" e_test3,
-		    TestLabel "Echeck 4" e_test4,
-		    TestLabel "Echeck 5" e_test5,
-		    TestLabel "Echeck 6" e_test6,
-		    TestLabel "Echeck 7" e_test7,
-		    TestLabel "Echeck 8" e_test8,
-		    TestLabel "Echeck 9" e_test9,		    
-		    TestLabel "Echeck 10" e_test10,
-		    TestLabel "Echeck 11" e_test11,
-		    TestLabel "Echeck 12" e_test12,
-		    TestLabel "Echeck 13" e_test13,
-		    TestLabel "Echeck 14" e_test14,
-		    TestLabel "Echeck 15" e_test15,
-		    TestLabel "Echeck 16" e_test16,		    
-		    TestLabel "Echeck 17" e_test17,
-		    TestLabel "Echeck 18" e_test18,
-		    TestLabel "Echeck 19" e_test19]
+e_test1 = TestCase (assertEqual "Eval 0" (ev "0") (ValNat NatZero))
+e_test2 = TestCase (assertEqual "Eval true" (ev "true") (ValBool BoolTrue))
+e_test3 = TestCase (assertEqual "Eval iszero 0" (ev "iszero 0") (ValBool BoolTrue))
+e_test4 = TestCase (assertEqual "Eval iszero succ 0" (ev "iszero succ 0") (ValBool BoolFalse))
+e_test5 = TestCase (assertEqual "Eval iszero pred 0" (ev "iszero pred 0") (ValBool BoolTrue))
+e_test6 = TestCase (assertEqual "Eval ifTrue" (ev "if iszero 0 then succ 0 else succ succ 0") (ExpSucc (ValNat NatZero)))
+e_test7 = TestCase (assertEqual "Eval IfFalse" (ev "if iszero succ 0 then 0 else pred 0") (ValNat NatZero))
+e_test8 = TestCase (assertEqual "Eval Plus Zero" (ev "plus 0 0") (ValNat NatZero))
+e_test9 = TestCase (assertEqual "Eval Plus Succ" (ev "plus succ 0 0") (ExpSucc (ValNat NatZero)))
+e_test10 = TestCase (assertEqual "Eval Plus Gen" (ev "plus succ 0 succ 0") (ExpSucc (ExpSucc (ValNat NatZero))))
+e_test11 = TestCase (assertEqual "Eval Min Zero" (ev "min 0 0") (ValNat NatZero))
+e_test12 = TestCase (assertEqual "Eval Min Succ" (ev "min succ 0 0") (ExpSucc (ValNat NatZero)))
+e_test13 = TestCase (assertEqual "Eval Min Gen" (ev "min succ succ 0 succ 0") (ExpSucc (ValNat NatZero)))
+e_test14 = TestCase (assertEqual "Eval Mult Zero" (ev "mult 0 0") (ValNat NatZero))
+e_test15 = TestCase (assertEqual "Eval Mult Succ" (ev "mult succ 0 0") (ValNat NatZero))
+e_test16 = TestCase (assertEqual "Eval Mult Gen" (ev "mult succ succ 0 succ succ 0") (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))
+e_test17 = TestCase (assertEqual "Eval Div Zero" (ev "div 0 succ 0") (ValNat NatZero))
+e_test18 = TestCase (assertEqual "Eval Div Succ" (ev "div succ 0 succ 0") (ExpSucc (ValNat NatZero)))
+e_test19 = TestCase (assertEqual "Eval Div Gen" (ev "div succ succ succ succ 0 succ succ 0") (ExpSucc (ExpSucc (ValNat NatZero)))) 
+
+
+ef_test1 = assertError "Eval Div zero zero" "Divide by zero" (ev "div 0 0")
+ef_test2 = assertError "Eval Div Succ zero" "Divide by zero" (ev "div succ 0 0")
+
+e_tests = TestList [TestLabel "Eval 1" e_test1,
+		    TestLabel "Eval 2" e_test2,
+		    TestLabel "Eval 3" e_test3,
+		    TestLabel "Eval 4" e_test4,
+		    TestLabel "Eval 5" e_test5,
+		    TestLabel "Eval 6" e_test6,
+		    TestLabel "Eval 7" e_test7,
+		    TestLabel "Eval 8" e_test8,
+		    TestLabel "Eval 9" e_test9,		    
+		    TestLabel "Eval 10" e_test10,
+		    TestLabel "Eval 11" e_test11,
+		    TestLabel "Eval 12" e_test12,
+		    TestLabel "Eval 13" e_test13,
+		    TestLabel "Eval 14" e_test14,
+		    TestLabel "Eval 15" e_test15,
+		    TestLabel "Eval 16" e_test16,		    
+		    TestLabel "Eval 17" e_test17,
+		    TestLabel "Eval 18" e_test18,
+		    TestLabel "Eval 19" e_test19]
+
+ef_tests = TestList [TestLabel "Eval Failure 1" ef_test1,
+		     TestLabel "Eval Failure 2" ef_test2]
 		 
 
 		
@@ -149,3 +165,5 @@ main = do
         runTestTT cf_tests
 	putStrLn "\n \nTest Evaluator: "
         runTestTT e_tests
+	putStrLn "\n \nTest Evaluator (Failures): "
+	runTestTT ef_tests
