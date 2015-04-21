@@ -4,10 +4,11 @@ all: Parser.hs Evaluator.hs TypeChecker.hs Testing.hs Main.hs
 
 
 Parser.hs: Parser.y
-	   happy Parser.y
+	   happy -i Parser.y
 
 clean: 
 	   -rm Parser.hs
+	   -rm Parser.info
 	   -rm *.o
 	   -rm *.hi
 

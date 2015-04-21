@@ -34,4 +34,3 @@ checkType (P.ExpDiv frst sec)
     | checkType frst == Nat && checkType sec == Nat = Nat
     | otherwise = error $ "Invalid type (Div)"
 
-
