@@ -23,20 +23,35 @@ import Data.Char
       min              { TokenMin  }
       mult	       { TokenMult }
       div              { TokenDiv }
+      lambda           { TokenLambda }
+      '->'             { TokenArrow }
+      ':'              { TokenColom }
+      '.'              { TokenDot } 
+      var              { TokenVar $$ }
+      Bool     	       { TokenBool }
+      Nat              { TokenNat }
 
 %%
 
-Exp   : '(' Exp ')'              { $2 } 	
-      | ValBool                  { ValBool $1 }
-      | ValNat                   { ValNat $1 }
-      | if Exp then Exp else Exp { ExpIf $2 $4 $6 }
-      | succ Exp                 { ExpSucc $2 }
-      | pred Exp                 { ExpPred $2 }
-      | iszero Exp               { ExpIsZero $2 }
-      | plus Exp Exp             { ExpPlus $2 $3 }
-      | min  Exp Exp             { ExpMin $2 $3 } 
-      | mult Exp Exp             { ExpMult $2 $3 }
-      | div Exp Exp              { ExpDiv  $2 $3 }
+Exp   : '(' Exp ')'                          { $2 } 	
+      | ValBool                              { ValBool $1 }
+      | ValNat                               { ValNat $1 }
+      | if Exp then Exp else Exp             { ExpIf $2 $4 $6 }
+      | succ Exp                             { ExpSucc $2 }
+      | pred Exp                             { ExpPred $2 }
+      | iszero Exp                           { ExpIsZero $2 }
+      | plus Exp Exp                         { ExpPlus $2 $3 }
+      | min  Exp Exp                         { ExpMin $2 $3 } 
+      | mult Exp Exp                         { ExpMult $2 $3 }
+      | div Exp Exp                          { ExpDiv  $2 $3 }
+      | var				     { ExpVar $1 }
+      |	'(' lambda var ":" Types "." Exp ')' { ExpLambda $3 $5 $7}
+      | Exp Exp  			     { ExpApp $1 $2 }	
+
+
+Types : Nat { TypeNat }
+      | Bool { TypeBool }
+      | Types '->' Types {(TypeArrow $1 $3)}
 
 ValBool : false { BoolFalse }
         | true  { BoolTrue }
@@ -55,6 +70,14 @@ data Exp = ValNat ValNat
          | ExpMin Exp Exp
 	 | ExpMult Exp Exp
 	 | ExpDiv Exp Exp
+         | ExpVar String
+         | ExpLambda String Type Exp
+         | ExpApp Exp Exp
+    deriving (Eq, Show)
+
+data Type = TypeNat
+	  | TypeBool
+	  | TypeArrow Type Type
     deriving (Eq, Show)
 
 data ValBool = BoolFalse
@@ -78,7 +101,14 @@ data Token = TokenTrue
            | TokenPlus
            | TokenMin
 	   | TokenMult
-	   | TokenDiv 
+	   | TokenDiv
+	   | TokenLambda 
+	   | TokenArrow
+	   | TokenColom
+           | TokenDot
+           | TokenVar
+	   | TokenBool
+           | TokenNat
     deriving (Eq, Show)
 
 
@@ -89,6 +119,9 @@ lexer (c:cs)
 lexer ('(':cs) = TokenOB   : lexer cs
 lexer (')':cs) = TokenCB   : lexer cs
 lexer ('0':cs) = TokenZero : lexer cs
+lexer ('->':cs) = TokenArrow : lexer cs
+lexer (':':cs) = TokenColom : lexer cs
+lexer ('.':cs) = TokenDot : lexer cs
 lexer cs = 
     case span isAlpha cs of
         ("true", rest)   -> TokenTrue   : lexer rest
