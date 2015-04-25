@@ -120,15 +120,17 @@ c_test18 = TestCase (assertEqual "Tcheck Nested App"    (check "((lambda x:Nat .
 
 -- Test Invalid typing
 
-cf_test1 = assertError "IsZero Bool Fail"     "Invalid type (iszero)" (check "iszero true")
-cf_test2 = assertError "If not the same type" "Invalid type (If)"     (check "if true then true else 0")
-cf_test3 = assertError "If cond not Bool"     "Invalid type (If)"     (check "if 0 then true else false")
-cf_test4 = assertError "plus bool"            "Invalid type (Plus)"   (check "plus true 0")
-cf_test5 = assertError "min bool"             "Invalid type (Min)"    (check "min true 0")
-cf_test6 = assertError "mult bool"            "Invalid type (Mult)"   (check "mult true 0")
-cf_test7 = assertError "div bool"             "Invalid type (Div)"    (check "div 0 true")
-cf_test8 = assertError "lambda fail"          "Unknown Var y" 	      (check "(lambda x:Nat . y)")  
-cf_test9 = assertError "App fail"	      "Unknown Var y"         (check "((lambda x:Nat . y) 0)")
+cf_test1 =  assertError "IsZero Bool Fail"     "Invalid type (iszero)" (check "iszero true")
+cf_test2 =  assertError "If not the same type" "Invalid type (If)"     (check "if true then true else 0")
+cf_test3 =  assertError "If cond not Bool"     "Invalid type (If)"     (check "if 0 then true else false")
+cf_test4 =  assertError "plus bool"            "Invalid type (Plus)"   (check "plus true 0")
+cf_test5 =  assertError "min bool"             "Invalid type (Min)"    (check "min true 0")
+cf_test6 =  assertError "mult bool"            "Invalid type (Mult)"   (check "mult true 0")
+cf_test7 =  assertError "div bool"             "Invalid type (Div)"    (check "div 0 true")
+cf_test8 =  assertError "lambda fail"          "Unknown Var y" 	       (check "(lambda x:Nat . y)") -- Behaves correctly when tested manually but fails for no reason here. assertError doesn't catch exceptions in subexpression 
+                                                                                                    -- correctly? 
+cf_test9 =  assertError "App fail"	       "Unknown Var y"         (check "((lambda x:Nat . y) 0)")
+cf_test10 = assertError "Type Mismatch"        "Type Mismatch! (App)"  (check "((lambda x:Nat . x) true)")
 
 
 -- Lists
@@ -160,8 +162,9 @@ cf_tests = TestList  [TestLabel "TFcheck1" cf_test1,
                       TestLabel "Tfcheck5" cf_test5,
                       TestLabel "Tfcheck6" cf_test6,
                       TestLabel "Tfcheck7" cf_test7,
-		    --  TestLabel "Tfcheck8" cf_test8,
-		      TestLabel "Tfcheck9" cf_test9
+		      TestLabel "Tfcheck8" cf_test8,
+		      TestLabel "Tfcheck9"  cf_test9,
+		      TestLabel "Tfcheck10" cf_test10
 		     ]
 
 
@@ -219,7 +222,7 @@ e_test22 = TestCase (assertEqual "Eval App N>B"       (ev "((lambda x:Nat . isze
 						      (ValBool BoolTrue))
 e_test23 = TestCase (assertEqual "Eval App double"    (ev "(((lambda x:Nat . (lambda y:Nat . plus x y)) succ succ succ 0) succ succ 0)")
 						      (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero)))))))
-e_test24 = TestCase (assertEqual "Eval App nester"    (ev "((lambda x:Nat . succ x) ((lambda y:Bool . if y then succ succ x else succ x) true))")
+e_test24 = TestCase (assertEqual "Eval App nested"    (ev "((lambda x:Nat . succ x) ((lambda y:Bool . if y then succ succ 0 else succ 0) true))")
 						      (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero)))))
 						      
 

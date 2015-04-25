@@ -1,52 +1,83 @@
 module Evaluator where
-import qualified Parser as P
+import Parser
 
 
 
 -- Base Rules
-eval(P.ValBool P.BoolFalse) = P.ValBool P.BoolFalse
-eval(P.ValBool P.BoolTrue)  = P.ValBool P.BoolTrue
-eval(P.ValNat  P.NatZero)   = P.ValNat P.NatZero
+eval(ValBool BoolFalse) = ValBool BoolFalse
+eval(ValBool BoolTrue)  = ValBool BoolTrue
+eval(ValNat  NatZero)   = ValNat NatZero
 
 -- E-Succ
-eval(P.ExpSucc e) = P.ExpSucc (eval e)
+eval(ExpSucc e) = ExpSucc (eval e)
 
 -- E-Pred + E-PredZero + E-PredSucc 
-eval(P.ExpPred e) = exp_pred (eval e)
-	where exp_pred (P.ValNat P.NatZero) = P.ValNat P.NatZero
-      	      exp_pred (P.ExpSucc val)      = val
+eval(ExpPred e) = exp_pred (eval e)
+	where exp_pred (ValNat NatZero) = ValNat NatZero
+      	      exp_pred (ExpSucc val)    = val
 
 
 -- E-IsZero + E-IsZeroSucc + E-IsZeroZero
-eval(P.ExpIsZero e) = exp_iszero (eval e)
-	where exp_iszero (P.ValNat P.NatZero) = P.ValBool P.BoolTrue
-      	      exp_iszero (P.ExpSucc _)        = P.ValBool P.BoolFalse
+eval(ExpIsZero e) = exp_iszero (eval e)
+	where exp_iszero (ValNat NatZero) = ValBool BoolTrue
+      	      exp_iszero (ExpSucc _)      = ValBool BoolFalse
  
 
 -- E-If + E-IfTrue + E-IfFalse
-eval(P.ExpIf c f s) = exp_if (eval c)
-	where exp_if (P.ValBool P.BoolTrue)  = eval f
-      	      exp_if (P.ValBool P.BoolFalse) = eval s
+eval(ExpIf c f s) = exp_if (eval c)
+	where exp_if (ValBool BoolTrue)  = eval f
+      	      exp_if (ValBool BoolFalse) = eval s
 
 -- Addition
-eval(P.ExpPlus frst (P.ValNat P.NatZero)) = eval frst
-eval(P.ExpPlus frst (P.ExpSucc sec))      = eval (P.ExpSucc (P.ExpPlus frst sec))
-eval(P.ExpPlus frst sec)                  = eval (P.ExpPlus (eval frst) (eval sec))
+eval(ExpPlus frst (ValNat NatZero)) = eval frst
+eval(ExpPlus frst (ExpSucc sec))    = eval (ExpSucc (ExpPlus frst sec))
+eval(ExpPlus frst sec)              = eval (ExpPlus (eval frst) (eval sec))
 
 -- Substraction
-eval(P.ExpMin frst (P.ValNat P.NatZero))        = eval frst
-eval(P.ExpMin (P.ValNat P.NatZero) _)           = P.ValNat P.NatZero
-eval(P.ExpMin (P.ExpSucc frst) (P.ExpSucc sec)) = eval (P.ExpMin frst sec)
-eval(P.ExpMin frst sec)                         = eval (P.ExpMin (eval frst) (eval sec))
+eval(ExpMin frst (ValNat NatZero))        = eval frst
+eval(ExpMin (ValNat NatZero) _)           = ValNat NatZero
+eval(ExpMin (ExpSucc frst) (ExpSucc sec)) = eval (ExpMin frst sec)
+eval(ExpMin frst sec)                     = eval (ExpMin (eval frst) (eval sec))
 
   
 -- Multiplication
-eval(P.ExpMult frst (P.ValNat P.NatZero)) = P.ValNat P.NatZero
-eval(P.ExpMult frst (P.ExpSucc sec))      = eval (P.ExpPlus frst (P.ExpMult frst sec))
-eval(P.ExpMult frst sec)                  = eval (P.ExpMult (eval frst) (eval sec))
+eval(ExpMult frst (ValNat NatZero)) = ValNat NatZero
+eval(ExpMult frst (ExpSucc sec))    = eval (ExpPlus frst (ExpMult frst sec))
+eval(ExpMult frst sec)              = eval (ExpMult (eval frst) (eval sec))
 
 -- Division
-eval(P.ExpDiv frst (P.ValNat P.NatZero))        = error $ "Divide by zero"
-eval(P.ExpDiv (P.ValNat P.NatZero) sec)         = P.ValNat P.NatZero
-eval(P.ExpDiv (P.ExpSucc frst) (P.ExpSucc sec)) = eval (P.ExpSucc (P.ExpDiv (P.ExpMin frst sec) (P.ExpSucc sec)))
-eval(P.ExpDiv frst sec)                         = eval (P.ExpDiv (eval frst) (eval sec)) 
+eval(ExpDiv frst (ValNat NatZero))        = error $ "Divide by zero"
+eval(ExpDiv (ValNat NatZero) sec)         = ValNat NatZero
+eval(ExpDiv (ExpSucc frst) (ExpSucc sec)) = eval (ExpSucc (ExpDiv (ExpMin frst sec) (ExpSucc sec)))
+eval(ExpDiv frst sec)                     = eval (ExpDiv (eval frst) (eval sec)) 
+
+
+-- Lambda
+eval(ExpLambda var typ bdy)  = ExpLambda var typ bdy
+
+-- App
+-- E-AppAbs
+eval(ExpApp (ExpLambda var _ bdy) term) = eval sub_exp
+	where sub_exp = substitute var ev_term bdy 
+	      ev_term = eval term --E-App2
+-- E-App1
+eval(ExpApp frst scd) = eval (ExpApp (eval frst) scd)	     
+
+-- Substitution 
+
+substitute var exp (ExpSucc bdy)           = ExpSucc (substitute var exp bdy)
+substitute var exp (ExpPred bdy)           = ExpPred (substitute var exp bdy)
+substitute var exp (ExpIsZero bdy)         = ExpIsZero (substitute var exp bdy)
+substitute var exp (ExpIf c f s)           = ExpIf (substitute var exp c) (substitute var exp f) (substitute var exp s)
+substitute var exp (ExpPlus frst scd)      = ExpPlus (substitute var exp frst) (substitute var exp scd)
+substitute var exp (ExpMin frst scd)       = ExpMin (substitute var exp frst) (substitute var exp scd)
+substitute var exp (ExpMult frst scd)      = ExpMult (substitute var exp frst) (substitute var exp scd)
+substitute var exp (ExpDiv frst scd)       = ExpDiv (substitute var exp frst) (substitute var exp scd)
+substitute var exp (ExpLambda v2 typ bdy)
+ | var == v2 				   = ExpLambda var typ bdy
+ | otherwise 				   = ExpLambda v2 typ (substitute var exp bdy)
+substitute var exp (ExpApp lam term)       = ExpApp (substitute var exp lam) (substitute var exp term)
+substitute var exp (ExpVar name)
+ | var == name 				   = exp
+ | otherwise   				   = ExpVar name
+substitute var exp val                     = val

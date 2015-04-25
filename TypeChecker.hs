@@ -43,7 +43,7 @@ checkType env (ExpVar var)
     | otherwise = error $ "Unknown Var " ++ var	
 checkType env (ExpApp lambda exp) 
     | var_type == exp_type = ret_type
-    | otherwise = error $ "Type mismatch! (App)"
+    | otherwise = error $ "Type Mismatch! (App)"
  where exp_type = checkType env exp
        TypeArrow var_type ret_type = checkType env lambda
 
