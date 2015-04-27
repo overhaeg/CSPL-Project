@@ -1,6 +1,5 @@
 all: Parser.hs Evaluator.hs TypeChecker.hs Testing.hs Main.hs
-	   ghc Main.hs
-	   ghc Testing.hs
+	   ghc -fhpc Testing.hs --make
 
 
 Parser.hs: Parser.y

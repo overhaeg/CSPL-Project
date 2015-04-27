@@ -212,8 +212,6 @@ e_test18 = TestCase (assertEqual "Eval Div Succ"      (ev "div succ 0 succ 0")
                                                       (ExpSucc (ValNat NatZero)))
 e_test19 = TestCase (assertEqual "Eval Div Gen"       (ev "div succ succ succ succ 0 succ succ 0")
 						      (ExpSucc (ExpSucc (ValNat NatZero))))
-
--- Test for not yet implemented features
 e_test20 = TestCase (assertEqual "Eval Lambda simple" (ev "(lambda x:Nat . x)")
 						      (ExpLambda "x" TypeNat (ExpVar "x")))
 e_test21 = TestCase (assertEqual "Eval App simple"    (ev "((lambda x:Nat . succ x) 0)")
@@ -225,7 +223,6 @@ e_test23 = TestCase (assertEqual "Eval App double"    (ev "(((lambda x:Nat . (la
 e_test24 = TestCase (assertEqual "Eval App nested"    (ev "((lambda x:Nat . succ x) ((lambda y:Bool . if y then succ succ 0 else succ 0) true))")
 						      (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero)))))
 						      
-
 
 ef_test1 = assertError "Eval Div zero zero" "Divide by zero" (ev "div 0 0")
 ef_test2 = assertError "Eval Div Succ zero" "Divide by zero" (ev "div succ 0 0")
