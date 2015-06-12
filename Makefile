@@ -1,6 +1,8 @@
-all: Parser.hs Evaluator.hs TypeChecker.hs Testing.hs Main.hs
+all: clean-all Parser.hs Evaluator.hs TypeChecker.hs Testing.hs Main.hs
 	   ghc -fhpc Testing.hs --make
-
+	   ghc Main.hs
+	   ./Testing
+	   hpc markup Testing --exclude=Main --exclude=Parser
 
 Parser.hs: Parser.y
 	   happy -i Parser.y
@@ -10,6 +12,8 @@ clean:
 	   -rm Parser.info
 	   -rm *.o
 	   -rm *.hi
+	   -rm *.html
+	   -rm *.tix
 
 clean-all: clean
 	   -rm Main

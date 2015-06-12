@@ -74,7 +74,7 @@ substitute var exp (ExpMin frst scd)       = ExpMin (substitute var exp frst) (s
 substitute var exp (ExpMult frst scd)      = ExpMult (substitute var exp frst) (substitute var exp scd)
 substitute var exp (ExpDiv frst scd)       = ExpDiv (substitute var exp frst) (substitute var exp scd)
 substitute var exp (ExpLambda v2 typ bdy)
- | var == v2 				   = ExpLambda var typ bdy
+ | var == v2 				   = (ExpLambda var typ bdy)
  | otherwise 				   = ExpLambda v2 typ (substitute var exp bdy)
 substitute var exp (ExpApp lam term)       = ExpApp (substitute var exp lam) (substitute var exp term)
 substitute var exp (ExpVar name)

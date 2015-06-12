@@ -130,41 +130,44 @@ cf_test7 =  assertError "div bool"             "Invalid type (Div)"    (check "d
 cf_test8 =  assertError "lambda fail"          "Unknown Var y" 	       (check "(lambda x:Nat . y)") -- Behaves correctly when tested manually but fails for no reason here. assertError doesn't catch exceptions in subexpression 
                                                                                                     -- correctly? 
 cf_test9 =  assertError "App fail"	       "Unknown Var y"         (check "((lambda x:Nat . y) 0)")
-cf_test10 = assertError "Type Mismatch"        "Type Mismatch! (App)"  (check "((lambda x:Nat . x) true)")
-
+cf_test10 = assertError "Type Mismatch"    "Type Mismatch! (App)"  (check "((lambda x:Nat . x) true)")
+cf_test11 = assertError "Succ Mismatch"    "Invalid type (succ)"   (check "succ true")
+cf_test12 = assertError "Pred Mismatch"    "Invalid type (pred)"   (check "pred false")
 
 -- Lists
 
 c_tests = TestList [TestLabel "Tcheck 1"  c_test1,
-		    TestLabel "Tcheck 2"  c_test2,
-	            TestLabel "Tcheck 3"  c_test3,
-		    TestLabel "Tcheck 4"  c_test4,
-		    TestLabel "Tcheck 5"  c_test5,
-		    TestLabel "Tcheck 6"  c_test6,
-		    TestLabel "Tcheck 7"  c_test7,
-	            TestLabel "Tcheck 8"  c_test8,
-		    TestLabel "Tcheck 9"  c_test9,
-		    TestLabel "Tcheck 10" c_test10,
-		    TestLabel "Tcheck 11" c_test11,
-		    TestLabel "Tcheck 12" c_test12,
+		            TestLabel "Tcheck 2"  c_test2,
+	                TestLabel "Tcheck 3"  c_test3,
+		            TestLabel "Tcheck 4"  c_test4,
+		            TestLabel "Tcheck 5"  c_test5,
+		            TestLabel "Tcheck 6"  c_test6,
+		            TestLabel "Tcheck 7"  c_test7,
+	                TestLabel "Tcheck 8"  c_test8,
+		            TestLabel "Tcheck 9"  c_test9,
+		            TestLabel "Tcheck 10" c_test10,
+		            TestLabel "Tcheck 11" c_test11,
+		            TestLabel "Tcheck 12" c_test12,
                     TestLabel "Tcheck 13" c_test13,
-		    TestLabel "Tcheck 14" c_test14,
-		    TestLabel "Tcheck 15" c_test15,
-		    TestLabel "Tcheck 16" c_test16,
-		    TestLabel "Tcheck 17" c_test17,
-		    TestLabel "Tcheck 18" c_test18
-		   ]	
+		            TestLabel "Tcheck 14" c_test14,
+		            TestLabel "Tcheck 15" c_test15,
+		            TestLabel "Tcheck 16" c_test16,
+		            TestLabel "Tcheck 17" c_test17,
+		            TestLabel "Tcheck 18" c_test18
+		             ]    	
 
 cf_tests = TestList  [TestLabel "TFcheck1" cf_test1,
                       TestLabel "Tfcheck2" cf_test2,
                       TestLabel "Tfcheck3" cf_test3,
-  		      TestLabel "Tfcheck4" cf_test4,
+  		              TestLabel "Tfcheck4" cf_test4,
                       TestLabel "Tfcheck5" cf_test5,
                       TestLabel "Tfcheck6" cf_test6,
                       TestLabel "Tfcheck7" cf_test7,
-		      TestLabel "Tfcheck8" cf_test8,
-		      TestLabel "Tfcheck9"  cf_test9,
-		      TestLabel "Tfcheck10" cf_test10
+		              TestLabel "Tfcheck8" cf_test8,
+		              TestLabel "Tfcheck9"  cf_test9,
+		              TestLabel "Tfcheck10" cf_test10,
+                      TestLabel "Tfcheck11" cf_test11,
+                      TestLabel "Tfcehck12" cf_test12
 		     ]
 
 
@@ -196,33 +199,42 @@ e_test10 = TestCase (assertEqual "Eval Plus Gen"      (ev "plus succ 0 succ 0")
 						      (ExpSucc (ExpSucc (ValNat NatZero))))
 e_test11 = TestCase (assertEqual "Eval Min Zero"      (ev "min 0 0") 
 						      (ValNat NatZero))
-e_test12 = TestCase (assertEqual "Eval Min Succ"      (ev "min succ 0 0") 
+e_test12 = TestCase (assertEqual "Eval Zero Min"      (ev "min 0 succ 0")
+                              (ValNat NatZero))
+e_test13 = TestCase (assertEqual "Eval Min Succ"      (ev "min succ 0 0") 
 						      (ExpSucc (ValNat NatZero)))
-e_test13 = TestCase (assertEqual "Eval Min Gen"       (ev "min succ succ 0 succ 0") 
+e_test14 = TestCase (assertEqual "Eval Min Gen"       (ev "min succ succ 0 succ 0") 
 						      (ExpSucc (ValNat NatZero)))
-e_test14 = TestCase (assertEqual "Eval Mult Zero"     (ev "mult 0 0") 
+e_test15 = TestCase (assertEqual "Eval Min Pred"      (ev "min pred succ succ 0 succ 0")
+                              (ValNat NatZero))
+e_test16 = TestCase (assertEqual "Eval Mult Zero"     (ev "mult 0 0") 
 						      (ValNat NatZero))
-e_test15 = TestCase (assertEqual "Eval Mult Succ"     (ev "mult succ 0 0") 
+e_test17 = TestCase (assertEqual "Eval Mult Succ"     (ev "mult succ 0 0") 
 						      (ValNat NatZero))
-e_test16 = TestCase (assertEqual "Eval Mult Gen"      (ev "mult succ succ 0 succ succ 0") 
+e_test18 = TestCase (assertEqual "Eval Mult Gen"      (ev "mult succ succ 0 succ succ 0") 
 						      (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))
-e_test17 = TestCase (assertEqual "Eval Div Zero"      (ev "div 0 succ 0") 
+e_test19 = TestCase (assertEqual "Eval Div Zero"      (ev "div 0 succ 0") 
 						      (ValNat NatZero))
-e_test18 = TestCase (assertEqual "Eval Div Succ"      (ev "div succ 0 succ 0") 
+e_test20 = TestCase (assertEqual "Eval Div Succ"      (ev "div succ 0 succ 0") 
                                                       (ExpSucc (ValNat NatZero)))
-e_test19 = TestCase (assertEqual "Eval Div Gen"       (ev "div succ succ succ succ 0 succ succ 0")
+e_test21 = TestCase (assertEqual "Eval Div Gen"       (ev "div succ succ succ succ 0 succ succ 0")
 						      (ExpSucc (ExpSucc (ValNat NatZero))))
-e_test20 = TestCase (assertEqual "Eval Lambda simple" (ev "(lambda x:Nat . x)")
+e_test22 = TestCase (assertEqual "Eval Lambda simple" (ev "(lambda x:Nat . x)")
 						      (ExpLambda "x" TypeNat (ExpVar "x")))
-e_test21 = TestCase (assertEqual "Eval App simple"    (ev "((lambda x:Nat . succ x) 0)")
+e_test23 = TestCase (assertEqual "Eval App simple"    (ev "((lambda x:Nat . succ x) 0)")
 						      (ExpSucc (ValNat NatZero)))
-e_test22 = TestCase (assertEqual "Eval App N>B"       (ev "((lambda x:Nat . iszero x) 0)")
+e_test24 = TestCase (assertEqual "Eval App N>B"       (ev "((lambda x:Nat . iszero x) 0)")
 						      (ValBool BoolTrue))
-e_test23 = TestCase (assertEqual "Eval App double"    (ev "(((lambda x:Nat . (lambda y:Nat . plus x y)) succ succ succ 0) succ succ 0)")
+e_test25 = TestCase (assertEqual "Eval App double"    (ev "(((lambda x:Nat . (lambda y:Nat . plus x y)) succ succ succ 0) succ succ 0)")
 						      (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero)))))))
-e_test24 = TestCase (assertEqual "Eval App nested"    (ev "((lambda x:Nat . succ x) ((lambda y:Bool . if y then succ succ 0 else succ 0) true))")
-						      (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero)))))
-						      
+e_test26 = TestCase (assertEqual "Eval App nested"    (ev "((lambda x:Nat . min succ succ succ 0 x) ((lambda y:Bool . if y then succ succ 0 else succ 0) true))")
+						      (ExpSucc (ValNat NatZero)))
+e_test27 = TestCase (assertEqual "Eval App nested L"  (ev "((lambda x:Nat . mult x ((lambda y:Bool . if y then 0 else succ succ 0) false)) succ succ 0)")
+                              (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))
+e_test28 = TestCase (assertEqual "Eval App Same Var"  (ev "(((lambda x:Nat . (lambda x:Nat . succ x)) 0) 0)")
+                              (ExpSucc (ValNat NatZero)))
+
+
 
 ef_test1 = assertError "Eval Div zero zero" "Divide by zero" (ev "div 0 0")
 ef_test2 = assertError "Eval Div Succ zero" "Divide by zero" (ev "div succ 0 0")
@@ -250,8 +262,12 @@ e_tests = TestList [TestLabel "Eval 1"  e_test1,
 		    TestLabel "Eval 21" e_test21,
 		    TestLabel "Eval 22" e_test22,
 		    TestLabel "Eval 23" e_test23,
-		    TestLabel "Eval 24" e_test24
-		   ]
+		    TestLabel "Eval 24" e_test24,
+            TestLabel "Eval 25" e_test25,
+            TestLabel "Eval 26" e_test26,
+            TestLabel "Eval 27" e_test27,
+            TestLabel "Eval 28" e_test28
+    		   ]
 
 ef_tests = TestList [TestLabel "Eval Failure 1" ef_test1,
 		     TestLabel "Eval Failure 2" ef_test2]
