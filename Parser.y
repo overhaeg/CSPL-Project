@@ -23,7 +23,7 @@ import Data.Char
       ']'              { TokenCB }
       plus             { TokenPlus }
       min              { TokenMin  }
-      mult	           { TokenMult }
+      mult	       { TokenMult }
       div              { TokenDiv }
       lambda           { TokenLambda }
       forall           { TokenForAll }
@@ -40,22 +40,23 @@ import Data.Char
       Nat              { TokenNat }
 %%
 
-Exp   : '(' Exp ')'                           { $2 } 	
-      | ValBool                               { ValBool $1 }
-      | ValNat                                { ValNat $1 }
-      | if Exp then Exp else Exp              { ExpIf $2 $4 $6 }
-      | succ Exp                              { ExpSucc $2 }
-      | pred Exp                              { ExpPred $2 }
-      | iszero Exp                            { ExpIsZero $2 }
-      | plus Exp Exp                          { ExpPlus $2 $3 }
-      | min  Exp Exp                          { ExpMin $2 $3 } 
-      | mult Exp Exp                          { ExpMult $2 $3 }
-      | div Exp Exp                           { ExpDiv  $2 $3 }
-      | var				                      { ExpVar $1 }
-      |	'(' lambda var ':' Types '.' Exp ')'  { ExpLambda $3 $5 $7 }
-      | '(' lambda tvar '::' Kinds '.' Exp ')' { ExpTAbs $3 $5 $7 }
-      | '(' Exp Exp ')'  			          { ExpApp $2 $3 }	
-      | '[' Types ']'                         { ExpTPar $2 }
+Exp   : '(' Exp ')'                            { $2 } 	
+      | ValBool                                { ValBool $1 }
+      | ValNat                                 { ValNat $1 }
+      | if Exp then Exp else Exp               { ExpIf $2 $4 $6 }
+      | succ Exp                               { ExpSucc $2 }
+      | pred Exp                               { ExpPred $2 }
+      | iszero Exp                             { ExpIsZero $2 }
+      | plus Exp Exp                           { ExpPlus $2 $3 }
+      | min  Exp Exp                           { ExpMin $2 $3 } 
+      | mult Exp Exp                           { ExpMult $2 $3 }
+      | div Exp Exp                            { ExpDiv  $2 $3 }
+      | var				       { ExpVar $1 }
+      |	'(' lambda var ':' Types '.' Exp ')'   { ExpLambda (ExpVar $3) $5 $7 }
+      | '(' lambda tvar '::' Kinds '.' Exp ')' { ExpTAbs (TypeVar $3) $5 $7 }
+      | '(' def var Exp ')'		       { ExpDef (ExpVar $3 ) $4 }
+      | '(' Exp Exp ')'  		       { ExpApp $2 $3 }	
+      | '[' Types ']'                          { ExpTPar $2 }
 
 
 Types : Nat                              { TypeNat }
@@ -64,8 +65,8 @@ Types : Nat                              { TypeNat }
       | '(' TypeComp ')'                 { $2 }
 
 TypeComp : Types '->' Types                 { TypeArrow $1 $3}
-         | forall tvar '::' Kinds '.' Types { TypeUniv $2 $4 $6 }
-         | lambda tvar '::' Kinds '.' Types { TypeOpAbs $2 $4 $6 }
+         | forall Types '::' Kinds '.' Types { TypeUniv $2 $4 $6 }
+         | lambda Types '::' Kinds '.' Types { TypeOpAbs $2 $4 $6 }
          | Types Types                      { TypeOpApp $1 $2 }
 
 Kinds : '*'                      { KindStar }
@@ -86,11 +87,12 @@ data Exp = ValNat ValNat
          | ExpIsZero Exp
          | ExpPlus Exp Exp
          | ExpMin Exp Exp
-	     | ExpMult Exp Exp
-	     | ExpDiv Exp Exp
+	 | ExpMult Exp Exp
+	 | ExpDiv Exp Exp
          | ExpVar String
-         | ExpLambda String Type Exp
-         | ExpTAbs String Kind Exp
+         | ExpLambda Exp Type Exp
+         | ExpTAbs Type Kind Exp
+	 | ExpDef Exp Exp
          | ExpApp Exp Exp
          | ExpTPar Type
     deriving (Eq, Show)
@@ -98,10 +100,10 @@ data Exp = ValNat ValNat
 data Type = TypeNat
 	  | TypeBool
 	  | TypeArrow Type Type
-      | TypeVar String
-      | TypeUniv String Kind Type
-      | TypeOpAbs String Kind Type
-      | TypeOpApp Type Type
+      	  | TypeVar String
+      	  | TypeUniv Type Kind Type
+       	  | TypeOpAbs Type Kind Type
+          | TypeOpApp Type Type
     deriving (Eq, Show)
 
 data Kind = KindStar
@@ -130,20 +132,20 @@ data Token = TokenTrue
            | TokenCB
            | TokenPlus
            | TokenMin
-	       | TokenMult
-	       | TokenDiv
-	       | TokenLambda
+	   | TokenMult
+	   | TokenDiv
+	   | TokenLambda
            | TokenDef
            | TokenForAll
-	       | TokenTypeArrow
+	   | TokenTypeArrow
            | TokenKindArrow
-	       | TokenColon
+	   | TokenColon
            | TokenDoubleColon
            | TokenDot
            | TokenKind
            | TokenVar String
            | TokenTVar String
-	       | TokenBool
+	   | TokenBool
            | TokenNat
     deriving (Eq, Show)
 
@@ -159,8 +161,8 @@ lexer (']':cs)     = TokenCB          : lexer cs
 lexer ('0':cs)     = TokenZero        : lexer cs
 lexer ('=':'>':cs) = TokenKindArrow   : lexer cs
 lexer ('-':'>':cs) = TokenTypeArrow   : lexer cs
-lexer (':':cs)     = TokenColon       : lexer cs
 lexer (':':':':cs) = TokenDoubleColon : lexer cs
+lexer (':':cs)     = TokenColon       : lexer cs
 lexer ('*':cs)     = TokenKind        : lexer cs
 lexer ('.':cs)     = TokenDot         : lexer cs
 lexer cs = 

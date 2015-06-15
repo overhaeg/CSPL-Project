@@ -35,7 +35,7 @@ checkType env (ExpMult frst sec)
 checkType env (ExpDiv frst sec)
     | checkType env frst == TypeNat && checkType env sec == TypeNat = TypeNat
     | otherwise = error $ "Invalid type (Div)"
-checkType env (ExpLambda var typ bdy) = TypeArrow typ bdytyp 
+checkType env (ExpLambda (ExpVar var) typ bdy) = TypeArrow typ bdytyp 
  where  newenv = addVar env var typ
 	bdytyp = checkType newenv bdy
 checkType env (ExpVar var) 

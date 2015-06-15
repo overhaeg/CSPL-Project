@@ -77,7 +77,7 @@ substitute var exp (ExpLambda v2 typ bdy)
  | var == v2 				   = (ExpLambda var typ bdy)
  | otherwise 				   = ExpLambda v2 typ (substitute var exp bdy)
 substitute var exp (ExpApp lam term)       = ExpApp (substitute var exp lam) (substitute var exp term)
-substitute var exp (ExpVar name)
+substitute (ExpVar var) exp (ExpVar name)
  | var == name 				   = exp
  | otherwise   				   = ExpVar name
 substitute var exp val                     = val

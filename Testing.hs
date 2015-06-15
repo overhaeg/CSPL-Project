@@ -48,13 +48,23 @@ p_test11 = TestCase (assertEqual "Parse Div"         (parse "div succ succ 0 0")
 						     (ExpDiv (ExpSucc (ExpSucc (ValNat NatZero))) 
 						             (ValNat NatZero)))
 p_test12 = TestCase (assertEqual "Parse Lambda"      (parse "(lambda x:Nat . 0)") 
-						     (ExpLambda "x" TypeNat (ValNat NatZero)))
+						     (ExpLambda (ExpVar "x") TypeNat (ValNat NatZero)))
 p_test13 = TestCase (assertEqual "Parse App"         (parse "((lambda x:Nat . succ x) 0)") 
-					             (ExpApp (ExpLambda "x" TypeNat (ExpSucc (ExpVar "x"))) (ValNat NatZero))) 
+					             (ExpApp (ExpLambda (ExpVar "x") TypeNat (ExpSucc (ExpVar "x"))) (ValNat NatZero))) 
 p_test14 = TestCase (assertEqual "Parse Succ Lambda" (parse "(((lambda x:Nat . (lambda y:Nat . plus x y)) succ succ 0) succ succ succ 0)")
-						     (ExpApp (ExpApp (ExpLambda "x" TypeNat (ExpLambda "y" TypeNat (ExpPlus (ExpVar "x") (ExpVar "y")))) 
+						     (ExpApp (ExpApp (ExpLambda (ExpVar "x") TypeNat (ExpLambda (ExpVar "y") TypeNat (ExpPlus (ExpVar "x") (ExpVar "y")))) 
 		                                                     (ExpSucc (ExpSucc (ValNat NatZero)))) 
 						             (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))
+p_test15 = TestCase (assertEqual "Parse L Arrow"     (parse "(lambda x:(Nat->Nat) . (x 0))")
+						     (ExpLambda (ExpVar "x") (TypeArrow TypeNat TypeNat) (ExpApp (ExpVar "x") (ValNat NatZero))))
+p_test16 = TestCase (assertEqual "Parse Def Not"     (parse "(def not (lambda x:Bool . if x then false else true))")
+						     (ExpDef (ExpVar "not") (ExpLambda (ExpVar "x") TypeBool (ExpIf (ExpVar "x") (ValBool BoolFalse) (ValBool BoolTrue)))))
+p_test17 = TestCase (assertEqual "Parse TAbs/TApp"   (parse "((lambda X::* . (lambda x:X .x)) [Bool])")
+						     (ExpApp (ExpTAbs (TypeVar "X") KindStar (ExpLambda (ExpVar "x") (TypeVar "X") (ExpVar "x"))) (ExpTPar TypeBool)))
+p_test18 = TestCase (assertEqual "Parse OpAps/OpApp" (parse "(lambda n:((lambda T::(*=>*) . (T Nat)) (lambda X::* . X)) . succ succ n)")
+						     (ExpLambda (ExpVar "n") (TypeOpApp (TypeOpAbs (TypeVar "T") (KindArrow KindStar KindStar) (TypeOpApp (TypeVar "T") TypeNat))
+									                (TypeOpAbs (TypeVar "X") KindStar (TypeVar "X")))
+						     (ExpSucc (ExpSucc (ExpVar "n")))))
 -- List
 
 p_tests = TestList [TestLabel "Parse 1" p_test1,
@@ -70,7 +80,11 @@ p_tests = TestList [TestLabel "Parse 1" p_test1,
                     TestLabel "Parse 11" p_test11,
 		    TestLabel "Parse 12" p_test12,
 		    TestLabel "Parse 13" p_test13,
-		    TestLabel "Parse 14" p_test14
+		    TestLabel "Parse 14" p_test14,
+		    TestLabel "Parse 15" p_test15,
+		    TestLabel "Parse 16" p_test16,
+		    TestLabel "Parse 17" p_test17,
+   		    TestLabel "Parse 18" p_test18
 		   ]
 
 
@@ -220,7 +234,7 @@ e_test20 = TestCase (assertEqual "Eval Div Succ"      (ev "div succ 0 succ 0")
 e_test21 = TestCase (assertEqual "Eval Div Gen"       (ev "div succ succ succ succ 0 succ succ 0")
 						      (ExpSucc (ExpSucc (ValNat NatZero))))
 e_test22 = TestCase (assertEqual "Eval Lambda simple" (ev "(lambda x:Nat . x)")
-						      (ExpLambda "x" TypeNat (ExpVar "x")))
+						      (ExpLambda (ExpVar "x") TypeNat (ExpVar "x")))
 e_test23 = TestCase (assertEqual "Eval App simple"    (ev "((lambda x:Nat . succ x) 0)")
 						      (ExpSucc (ValNat NatZero)))
 e_test24 = TestCase (assertEqual "Eval App N>B"       (ev "((lambda x:Nat . iszero x) 0)")

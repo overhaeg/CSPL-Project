@@ -2,7 +2,7 @@ all: clean-all Parser.hs Evaluator.hs TypeChecker.hs Testing.hs Main.hs
 	   ghc -fhpc Testing.hs --make
 	   ghc Main.hs
 	   ./Testing
-	   hpc markup Testing --exclude=Main --exclude=Parser
+	   hpc markup Testing --exclude=Main
 
 Parser.hs: Parser.y
 	   happy -i Parser.y

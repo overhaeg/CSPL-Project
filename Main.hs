@@ -9,7 +9,7 @@ main = do
     let parsed = P.calc . P.lexer $ content
     putStr "Parsed: "
     print parsed
-   -- putStr "Typed:  "
-   -- print . T.checkType Map.empty $ parsed
-   -- putStr "Evaluated: "
-   -- print . E.eval $ parsed
+    putStr "Typed:  "
+    print . T.checkType Map.empty $ parsed
+    putStr "Evaluated: "
+    print . E.eval $ parsed
