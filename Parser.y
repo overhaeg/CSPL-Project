@@ -23,7 +23,7 @@ import Data.Char
       ']'              { TokenCB }
       plus             { TokenPlus }
       min              { TokenMin  }
-      mult	       { TokenMult }
+      mult	           { TokenMult }
       div              { TokenDiv }
       lambda           { TokenLambda }
       forall           { TokenForAll }
@@ -51,11 +51,11 @@ Exp   : '(' Exp ')'                            { $2 }
       | min  Exp Exp                           { ExpMin $2 $3 } 
       | mult Exp Exp                           { ExpMult $2 $3 }
       | div Exp Exp                            { ExpDiv  $2 $3 }
-      | var				       { ExpVar $1 }
+      | var				                       { ExpVar $1 }
       |	'(' lambda var ':' Types '.' Exp ')'   { ExpLambda (ExpVar $3) $5 $7 }
       | '(' lambda tvar '::' Kinds '.' Exp ')' { ExpTAbs (TypeVar $3) $5 $7 }
-      | '(' def var Exp ')'		       { ExpDef (ExpVar $3 ) $4 }
-      | '(' Exp Exp ')'  		       { ExpApp $2 $3 }	
+      | '(' def var Exp ')'		               { ExpDef (ExpVar $3 ) $4 }
+      | '(' Exp Exp ')'  		               { ExpApp $2 $3 }	
       | '[' Types ']'                          { ExpTPar $2 }
 
 
@@ -87,19 +87,19 @@ data Exp = ValNat ValNat
          | ExpIsZero Exp
          | ExpPlus Exp Exp
          | ExpMin Exp Exp
-	 | ExpMult Exp Exp
-	 | ExpDiv Exp Exp
+	     | ExpMult Exp Exp
+	     | ExpDiv Exp Exp
          | ExpVar String
          | ExpLambda Exp Type Exp
          | ExpTAbs Type Kind Exp
-	 | ExpDef Exp Exp
+	     | ExpDef Exp Exp
          | ExpApp Exp Exp
          | ExpTPar Type
     deriving (Eq, Show)
 
 data Type = TypeNat
-	  | TypeBool
-	  | TypeArrow Type Type
+	      | TypeBool
+	      | TypeArrow Type Type
       	  | TypeVar String
       	  | TypeUniv Type Kind Type
        	  | TypeOpAbs Type Kind Type

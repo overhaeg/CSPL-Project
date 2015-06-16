@@ -131,6 +131,19 @@ c_test17 = TestCase (assertEqual "Tcheck App Double"    (check "(((lambda x:Nat 
 							(TypeNat)) 
 c_test18 = TestCase (assertEqual "Tcheck Nested App"    (check "((lambda x:Nat . succ x) ((lambda y:Bool . if y then succ succ 0 else succ 0) true))")
 							(TypeNat))
+c_test19 = TestCase (assertEqual "Tcheck def and"       (check "(def and (lambda x:Bool . if x then (lambda y:Bool . y) else (lambda y:Bool . false)))")
+                            (TypeArrow TypeBool (TypeArrow TypeBool TypeBool)))
+c_test20 = TestCase (assertEqual "Tcheck Lbda fcttype"  (check "(lambda x:(Nat->Nat) . x)")
+                            (TypeArrow (TypeArrow TypeNat TypeNat) (TypeArrow TypeNat TypeNat)))
+c_test21 = TestCase (assertEqual "Tcheck TAbs/TApp"     (check "((lambda X::* . (lambda x:X .x)) [Bool])")
+                            (TypeArrow TypeBool TypeBool))
+c_test22 = TestCase (assertEqual "Tcheck App/TAbs/TApp" (check "((((lambda X::* . (lambda f:(X->X) . (lambda a:X . (f (f a))))) [Nat]) (lambda x:Nat . succ succ succ x)) 0)")
+                            (TypeNat))
+c_test23 = TestCase (assertEqual "Tcheck OpAbs/OpApp"   (check "(lambda n:((lambda T::(*=>*) . (T Nat)) (lambda X::* . X)) . succ succ n)")
+                            (TypeArrow (TypeOpApp (TypeOpAbs (TypeVar "T") (KindArrow KindStar KindStar) (TypeOpApp (TypeVar "T") TypeNat)) (TypeOpAbs (TypeVar "X") KindStar (TypeVar "X"))) TypeNat))
+c_test24 = TestCase (assertEqual "Tcheck UnivType"      (check "(lambda x:(forall X::* . (X->X)) . ((x [(forall X::* . (X->X))]) x))")
+                            (TypeArrow (TypeUniv (TypeVar "X") KindStar (TypeArrow (TypeVar "X") (TypeVar "X"))) (TypeUniv (TypeVar "X") KindStar (TypeArrow (TypeVar "X") (TypeVar "X")))))
+
 
 -- Test Invalid typing
 
@@ -143,10 +156,10 @@ cf_test6 =  assertError "mult bool"            "Invalid type (Mult)"   (check "m
 cf_test7 =  assertError "div bool"             "Invalid type (Div)"    (check "div 0 true")
 cf_test8 =  assertError "lambda fail"          "Unknown Var y" 	       (check "(lambda x:Nat . y)") -- Behaves correctly when tested manually but fails for no reason here. assertError doesn't catch exceptions in subexpression 
                                                                                                     -- correctly? 
-cf_test9 =  assertError "App fail"	       "Unknown Var y"         (check "((lambda x:Nat . y) 0)")
-cf_test10 = assertError "Type Mismatch"    "Type Mismatch! (App)"  (check "((lambda x:Nat . x) true)")
-cf_test11 = assertError "Succ Mismatch"    "Invalid type (succ)"   (check "succ true")
-cf_test12 = assertError "Pred Mismatch"    "Invalid type (pred)"   (check "pred false")
+cf_test9 =  assertError "App fail"	       "Unknown Var y"          (check "((lambda x:Nat . y) 0)")
+cf_test10 = assertError "Type Mismatch"    "Invalid type (Abs-App)" (check "((lambda x:Nat . x) true)")
+cf_test11 = assertError "Succ Mismatch"    "Invalid type (succ)"    (check "succ true")
+cf_test12 = assertError "Pred Mismatch"    "Invalid type (pred)"    (check "pred false")
 
 -- Lists
 
@@ -167,7 +180,13 @@ c_tests = TestList [TestLabel "Tcheck 1"  c_test1,
 		            TestLabel "Tcheck 15" c_test15,
 		            TestLabel "Tcheck 16" c_test16,
 		            TestLabel "Tcheck 17" c_test17,
-		            TestLabel "Tcheck 18" c_test18
+		            TestLabel "Tcheck 18" c_test18,
+                    TestLabel "Tcheck 19" c_test19,
+                    TestLabel "Tcheck 20" c_test20,
+                    TestLabel "Tcheck 21" c_test21,
+                    TestLabel "Tcheck 22" c_test22,
+                    TestLabel "Tcheck 23" c_test23,
+                    TestLabel "Tcheck 24" c_test24
 		             ]    	
 
 cf_tests = TestList  [TestLabel "TFcheck1" cf_test1,
