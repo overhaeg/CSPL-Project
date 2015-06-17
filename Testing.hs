@@ -68,24 +68,24 @@ p_test18 = TestCase (assertEqual "Parse OpAps/OpApp" (parse "(lambda n:((lambda 
 -- List
 
 p_tests = TestList [TestLabel "Parse 1" p_test1,
-	            TestLabel "Parse 2" p_test2,
-		    TestLabel "Parse 3" p_test3,
-	            TestLabel "Parse 4" p_test4,
-		    TestLabel "Parse 5" p_test5,
-	            TestLabel "Parse 6" p_test6,
-	            TestLabel "Parse 7" p_test7,
-		    TestLabel "Parse 8" p_test8,
-		    TestLabel "Parse 9" p_test9,
-		    TestLabel "Parse 10" p_test10,
+	                TestLabel "Parse 2" p_test2,
+		            TestLabel "Parse 3" p_test3,
+	                TestLabel "Parse 4" p_test4,
+		            TestLabel "Parse 5" p_test5,
+	                TestLabel "Parse 6" p_test6,
+	                TestLabel "Parse 7" p_test7,
+		            TestLabel "Parse 8" p_test8,
+		            TestLabel "Parse 9" p_test9,
+		            TestLabel "Parse 10" p_test10,
                     TestLabel "Parse 11" p_test11,
-		    TestLabel "Parse 12" p_test12,
-		    TestLabel "Parse 13" p_test13,
-		    TestLabel "Parse 14" p_test14,
-		    TestLabel "Parse 15" p_test15,
-		    TestLabel "Parse 16" p_test16,
-		    TestLabel "Parse 17" p_test17,
-   		    TestLabel "Parse 18" p_test18
-		   ]
+		            TestLabel "Parse 12" p_test12,
+		            TestLabel "Parse 13" p_test13,
+		            TestLabel "Parse 14" p_test14,
+		            TestLabel "Parse 15" p_test15,
+		            TestLabel "Parse 16" p_test16,
+		            TestLabel "Parse 17" p_test17,
+   		            TestLabel "Parse 18" p_test18
+		            ]
 
 
 ------ TypeCheck tests
@@ -94,13 +94,13 @@ check text = checkType Map.empty . parse $ text
 
 -- Test Valid Typing
 
-c_test1 = TestCase (assertEqual  "Tcheck 0"             (check "0") 
+c_test1 = TestCase (assertEqual  "Tcheck 0"             (check "(0)") 
 							(TypeNat))
-c_test2 = TestCase (assertEqual  "Tcheck true"          (check "true") 
+c_test2 = TestCase (assertEqual  "Tcheck true"          (check "(true)") 
 							(TypeBool))
-c_test3 = TestCase (assertEqual  "Tcheck false"         (check "false") 
+c_test3 = TestCase (assertEqual  "Tcheck false"         (check "(false)") 
 							(TypeBool))
-c_test4 = TestCase (assertEqual  "Tcheck iszero"        (check "iszero succ succ 0") 
+c_test4 = TestCase (assertEqual  "Tcheck iszero"        (check "(iszero (succ (succ 0)))") 
 							(TypeBool))
 c_test5 = TestCase (assertEqual  "Tcheck if"            (check "if iszero 0 then succ 0 else pred succ 0") 
 							(TypeNat))
@@ -154,12 +154,14 @@ cf_test4 =  assertError "plus bool"            "Invalid type (Plus)"   (check "p
 cf_test5 =  assertError "min bool"             "Invalid type (Min)"    (check "min true 0")
 cf_test6 =  assertError "mult bool"            "Invalid type (Mult)"   (check "mult true 0")
 cf_test7 =  assertError "div bool"             "Invalid type (Div)"    (check "div 0 true")
-cf_test8 =  assertError "lambda fail"          "Unknown Var y" 	       (check "(lambda x:Nat . y)") -- Behaves correctly when tested manually but fails for no reason here. assertError doesn't catch exceptions in subexpression 
-                                                                                                    -- correctly? 
-cf_test9 =  assertError "App fail"	       "Unknown Var y"          (check "((lambda x:Nat . y) 0)")
-cf_test10 = assertError "Type Mismatch"    "Invalid type (Abs-App)" (check "((lambda x:Nat . x) true)")
-cf_test11 = assertError "Succ Mismatch"    "Invalid type (succ)"    (check "succ true")
-cf_test12 = assertError "Pred Mismatch"    "Invalid type (pred)"    (check "pred false")
+cf_test8 =  assertError "lambda fail"          "Unknown Var y" 	       (check "(lambda x:Nat . y)") 
+-- Behaves correctly when tested manually but fails for no reason here. assertError doesn't catch exceptions in subexpression 
+-- correctly? 
+cf_test9 =  assertError "App fail"	       "Unknown Var y"           (check "((lambda x:Nat . y) 0)")
+cf_test10 = assertError "Type Mismatch"    "Invalid type (Abs-App)"  (check "((lambda x:Nat . x) true)")
+cf_test11 = assertError "Succ Mismatch"    "Invalid type (succ)"     (check "succ true")
+cf_test12 = assertError "Pred Mismatch"    "Invalid type (pred)"     (check "pred false")
+cf_test13 = assertError "TAbs-TApp kind"   "Invalid kind (TAbs-App)" (check "((lambda X::(*=>*) . (lambda x:X .x)) [Bool])")
 
 -- Lists
 
@@ -266,7 +268,9 @@ e_test27 = TestCase (assertEqual "Eval App nested L"  (ev "((lambda x:Nat . mult
                               (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))
 e_test28 = TestCase (assertEqual "Eval App Same Var"  (ev "(((lambda x:Nat . (lambda x:Nat . succ x)) 0) 0)")
                               (ExpSucc (ValNat NatZero)))
-
+e_test29 = TestCase (assertEqual "Eval F omega"       (ev "((((lambda X::* . (((lambda X::* . (lambda f:(X->X) . (lambda a:X . (f (f a))))) [(X->X)]) ((lambda X::* . (lambda f:(X->X) . (lambda a:X . (f (f a))))) [X]))) [Nat]) (lambda x:Nat . succ succ succ x)) 0)")
+                              (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ExpSucc (ValNat NatZero))))))))))))))
+                              
 
 
 ef_test1 = assertError "Eval Div zero zero" "Divide by zero" (ev "div 0 0")
@@ -299,7 +303,8 @@ e_tests = TestList [TestLabel "Eval 1"  e_test1,
             TestLabel "Eval 25" e_test25,
             TestLabel "Eval 26" e_test26,
             TestLabel "Eval 27" e_test27,
-            TestLabel "Eval 28" e_test28
+            TestLabel "Eval 28" e_test28,
+            TestLabel "Eval 29" e_test29
     		   ]
 
 ef_tests = TestList [TestLabel "Eval Failure 1" ef_test1,
