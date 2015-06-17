@@ -85,7 +85,7 @@ checkType env (ExpTAbs (TypeVar tvar) kind bdy) = (TypeUniv (TypeVar tvar) kind 
        bdytyp = checkType nenv bdy
 checkType env (ExpApp tabs (ExpTPar par))
     | parkind == ukind = substituteTypeType uvar par utyp
-    | otherwise = error $ "Invalid kind (TAbs-App) "
+    | otherwise = error $ "Invalid kind (TAbs-App)"
  where TypeUniv uvar ukind utyp = checkType env tabs
        parkind                  = checkKind env par
 checkType env (ExpApp lambda exp) 
