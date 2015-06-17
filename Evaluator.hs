@@ -91,14 +91,6 @@ substitute var exp val                     = val
 
 -- Type in Exp
 substituteTypeExp :: Type -> Type -> Exp -> Exp
-substituteTypeExp tvar tpar (ExpSucc exp)                          = ExpSucc $ substituteTypeExp tvar tpar exp
-substituteTypeExp tvar tpar (ExpPred exp)                          = ExpPred $ substituteTypeExp tvar tpar exp
-substituteTypeExp tvar tpar (ExpIsZero exp)                        = ExpIsZero $ substituteTypeExp tvar tpar exp
-substituteTypeExp tvar tpar (ExpIf c f s)                          = ExpIf (substituteTypeExp tvar tpar c) (substituteTypeExp tvar tpar f) (substituteTypeExp tvar tpar s)
-substituteTypeExp tvar tpar (ExpPlus f s)                          = ExpPlus (substituteTypeExp tvar tpar f) (substituteTypeExp tvar tpar s)
-substituteTypeExp tvar tpar (ExpMin f s)                           = ExpMin  (substituteTypeExp tvar tpar f) (substituteTypeExp tvar tpar s)
-substituteTypeExp tvar tpar (ExpMult f s)                          = ExpMult (substituteTypeExp tvar tpar f) (substituteTypeExp tvar tpar s)
-substituteTypeExp tvar tpar (ExpDiv f s)                           = ExpDiv  (substituteTypeExp tvar tpar f) (substituteTypeExp tvar tpar s)
 substituteTypeExp tvar tpar (ExpLambda var (TypeArrow t1 t2) bdy)  = ExpLambda var (TypeArrow st1 st2) (substituteTypeExp tvar tpar bdy)
     where st1 = if eqType tvar t1
                 then tpar
